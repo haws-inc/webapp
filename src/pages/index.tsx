@@ -4,7 +4,7 @@ import Head from 'next/head';
 
 import MyButton from '@/components/MyButton/MyButton';
 import ImageContainer from '@/containers/ImageContainer';
-import Title from '@/stories/Title/Title';
+import Title from '@/stories/Title/Title'
 
 const Home: NextPage = () => {
   return (
