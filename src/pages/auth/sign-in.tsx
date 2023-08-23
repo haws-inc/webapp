@@ -11,20 +11,20 @@ import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 interface ISignInValues {
   mobile: string,
-  password: string,
+  //password: string,
 }
 
 const defaultValues: ISignInValues = {
   mobile: '',
-  password: '',
+  // password: '',
 };
 
 const signinSchema = yupObject({
   mobile: yupString()
     .required('Please input your mobile number.'),
-  password: yupString()
-    .required('Please input a valid password.')
-    .min(8, 'Please input a password longer than 8 characters.'),
+  // password: yupString()
+  //   .required('Please input a valid password.')
+  //   .min(8, 'Please input a password longer than 8 characters.'),
 });
 
 export default function SignInPage() {
@@ -112,7 +112,7 @@ export default function SignInPage() {
               helperText={touched.mobile && errors.mobile}
             />
 
-            <TextField
+            {/*<TextField
               fullWidth
               name='password'
               type={'password'}
@@ -123,7 +123,7 @@ export default function SignInPage() {
               error={touched.password && !!(errors.password)}
               label='Password'
               helperText={touched.password && errors.password}
-            />
+            />*/}
 
             <LoadingButton
               type={'submit'}
