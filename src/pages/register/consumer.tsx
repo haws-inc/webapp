@@ -12,26 +12,27 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { object as yupObject, string as yupString } from 'yup';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { object as yupObject, string as yupString, date as yupDate } from 'yup';
 import { Formik, Form } from 'formik';
-import { LoadingButton } from '@mui/lab';
-import { Save } from '@mui/icons-material';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Save from '@mui/icons-material/Save';
 import { auth } from '@/utils/firebase.config';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import dayjs from 'dayjs';
 
 interface ISignInValues {
   firstName: string,
   lastName: string,
   mobile: string,
-  // TODO: Add birthdate field
-  // birthDate: Date,
+  birthDate: Date,
 }
 
 const defaultValues: ISignInValues = {
   firstName: '',
   lastName: '',
   mobile: '',
+  birthDate: dayjs().toDate(),
 };
 
 const signinSchema = yupObject({
@@ -41,6 +42,12 @@ const signinSchema = yupObject({
     .required('Please input a last name.'),
   mobile: yupString()
     .required('Please input your mobile number.'),
+  birthDate: yupDate()
+    .max(
+      dayjs(),
+      'Please input a date earlier than current date.',
+    )
+    .required('Please input your birth date.'),
 });
 
 function Copyright(props: any) {
@@ -56,13 +63,10 @@ function Copyright(props: any) {
   );
 }
 
-// TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
-
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [recaptchaVerifier, setRecaptchaVerifier] = useState<any>(null)
-  const [confirmationResult, setConfirmationResult] = useState<any>(null)
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<any>(null);
+  const [confirmationResult, setConfirmationResult] = useState<any>(null);
 
   const onCaptchaVerify = () => {
     if (recaptchaVerifier) return recaptchaVerifier;
@@ -71,7 +75,7 @@ export default function SignIn() {
     console.log('----- NEW VERIFIER -----');
     console.log(verifier);
     setRecaptchaVerifier(verifier);
-    return verifier
+    return verifier;
   };
 
   const firebaseSignInWithPhoneNumber = async (phoneNumber: string, appVerifier: any) => {
@@ -81,7 +85,7 @@ export default function SignIn() {
     // SMS sent. Prompt user to type the code from the message, then sign the
     // user in with confirmationResult.confirm(code).
     setConfirmationResult(result);
-    return result
+    return result;
   };
 
   const handleSignIn = async (values: ISignInValues) => {
@@ -95,10 +99,10 @@ export default function SignIn() {
       alert(`OTP sent to ${values.mobile}`);
 
       // TODO: Add proper modals
-      let otp: string | null = ""
-      do{
+      let otp: string | null = '';
+      do {
         otp = prompt('Please enter OTP');
-      } while(!otp)
+      } while (!otp);
 
       const otpResult = await result.confirm(otp);
       console.log('----- OTP RESULT -----');
@@ -114,120 +118,138 @@ export default function SignIn() {
   };
 
   return (
-    <ThemeProvider theme={defaultTheme}>
-      <Formik
-        initialValues={defaultValues}
-        onSubmit={(values) => handleSignIn(values)}
-        validateOnChange={true}
-        validateOnBlur={true}
-        validationSchema={signinSchema}
-      >
-        {({
-            values,
-            errors,
-            touched,
-            dirty,
-            isValid,
-            handleChange,
-            handleBlur,
-            handleSubmit,
-          }) => (
+    <Formik
+      initialValues={defaultValues}
+      onSubmit={(values) => handleSignIn(values)}
+      validateOnChange={true}
+      validateOnBlur={true}
+      validationSchema={signinSchema}
+    >
+      {({
+          values,
+          errors,
+          touched,
+          dirty,
+          isValid,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          setFieldValue,
+        }) => (
 
-          <Container component='main' maxWidth='xs'>
-            <Form onSubmit={handleSubmit}>
-              <CssBaseline />
-              <Box
-                sx={{
-                  marginTop: 8,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}
-              >
-                <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                  <LockOutlinedIcon />
-                </Avatar>
+        <Container component='main' maxWidth='xs'>
+          <Form onSubmit={handleSubmit}>
+            <CssBaseline />
+            <Box
+              sx={{
+                marginTop: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                <LockOutlinedIcon />
+              </Avatar>
 
-                <Typography component='h1' variant='h5'>
-                  Sign Up
-                </Typography>
+              <Typography component='h1' variant='h5'>
+                Sign Up
+              </Typography>
 
-                <Box component='form' onSubmit={handleSubmit} noValidate sx={{ mt: 3 }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        margin='normal'
-                        required
-                        fullWidth
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        value={values.firstName}
-                        error={touched.firstName && !!(errors.firstName)}
-                        label='First Name'
-                        helperText={touched.firstName && errors.firstName}
-                        name='firstName'
-                        autoFocus
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        margin='normal'
-                        required
-                        fullWidth
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        value={values.lastName}
-                        error={touched.lastName && !!(errors.lastName)}
-                        label='Last Name'
-                        helperText={touched.lastName && errors.lastName}
-                        name='lastName'
-                        autoFocus
-                      />
-                    </Grid>
-
-                    <Grid item xs={12}>
-                      <TextField
-                        margin='normal'
-                        required
-                        fullWidth
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        value={values.mobile}
-                        error={touched.mobile && !!(errors.mobile)}
-                        label='Mobile Number'
-                        helperText={touched.mobile && errors.mobile}
-                        name='mobile'
-                        autoFocus
-                      />
-                    </Grid>
+              <Box component='div' sx={{ mt: 3 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      margin='normal'
+                      required
+                      fullWidth
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.firstName}
+                      error={touched.firstName && !!(errors.firstName)}
+                      label='First Name'
+                      helperText={touched.firstName && errors.firstName}
+                      name='firstName'
+                      autoFocus
+                    />
                   </Grid>
 
-                  <FormControlLabel
-                    control={<Checkbox value='remember' color='primary' />}
-                    label='Remember me'
-                  />
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      margin='normal'
+                      required
+                      fullWidth
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.lastName}
+                      error={touched.lastName && !!(errors.lastName)}
+                      label='Last Name'
+                      helperText={touched.lastName && errors.lastName}
+                      name='lastName'
+                      autoFocus
+                    />
+                  </Grid>
 
-                  <LoadingButton
-                    type='submit'
-                    fullWidth
-                    loading={isLoading}
-                    loadingPosition={'start'}
-                    startIcon={<Save />}
-                    variant='contained'
-                    sx={{ mt: 3, mb: 2 }}
-                    disabled={!(isValid && dirty)}
-                  >
-                    Sign Up
-                  </LoadingButton>
-                </Box>
+                  <Grid item xs={12}>
+                    <TextField
+                      margin='normal'
+                      required
+                      fullWidth
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.mobile}
+                      error={touched.mobile && !!(errors.mobile)}
+                      label='Mobile Number'
+                      helperText={touched.mobile && errors.mobile}
+                      name='mobile'
+                      autoFocus
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <DatePicker
+                      value={dayjs(values.birthDate) ?? Date.now()}
+                      onChange={(val: any) => setFieldValue('birthDate', val, true)}
+                      slotProps={{
+                        textField: {
+                          required: true,
+                          fullWidth: true,
+                          value: dayjs(values.birthDate) ?? Date.now(),
+                          name: 'birthDate',
+                          label: 'Birthday',
+                          onBlur: handleBlur,
+                          error: touched?.birthDate && !!(errors?.birthDate),
+                          helperText: 'MM/DD/YYYY',
+                        },
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+
+                <FormControlLabel
+                  control={<Checkbox value='remember' color='primary' />}
+                  label='Remember me'
+                />
+
+                <LoadingButton
+                  type='submit'
+                  fullWidth
+                  loading={isLoading}
+                  loadingPosition={'start'}
+                  startIcon={<Save />}
+                  variant='contained'
+                  sx={{ mt: 3, mb: 2 }}
+                  disabled={!(isValid && dirty)}
+                >
+                  Sign Up
+                </LoadingButton>
               </Box>
-            </Form>
+            </Box>
+          </Form>
 
-            <Copyright sx={{ mt: 8, mb: 4 }} />
-          </Container>
-        )}
-      </Formik>
-    </ThemeProvider>
+          <Copyright sx={{ mt: 8, mb: 4 }} />
+        </Container>
+      )}
+    </Formik>
   );
 }
