@@ -21,21 +21,21 @@ import { auth } from '@/utils/firebase.config';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import dayjs from 'dayjs';
 
-interface ISignInValues {
+interface IRegister {
   firstName: string,
   lastName: string,
   mobile: string,
   birthDate: Date,
 }
 
-const defaultValues: ISignInValues = {
+const defaultValues: IRegister = {
   firstName: '',
   lastName: '',
   mobile: '',
   birthDate: dayjs().toDate(),
 };
 
-const signinSchema = yupObject({
+const registrationSchema = yupObject({
   firstName: yupString()
     .required('Please input a first name.'),
   lastName: yupString()
@@ -63,7 +63,7 @@ function Copyright(props: any) {
   );
 }
 
-export default function SignIn() {
+export default function RegisterConsumer() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [recaptchaVerifier, setRecaptchaVerifier] = useState<any>(null);
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
@@ -88,7 +88,7 @@ export default function SignIn() {
     return result;
   };
 
-  const handleSignIn = async (values: ISignInValues) => {
+  const handleRegister = async (values: IRegister) => {
     try {
       setIsLoading(true);
 
@@ -120,10 +120,10 @@ export default function SignIn() {
   return (
     <Formik
       initialValues={defaultValues}
-      onSubmit={(values) => handleSignIn(values)}
+      onSubmit={(values) => handleRegister(values)}
       validateOnChange={true}
       validateOnBlur={true}
-      validationSchema={signinSchema}
+      validationSchema={registrationSchema}
     >
       {({
           values,
